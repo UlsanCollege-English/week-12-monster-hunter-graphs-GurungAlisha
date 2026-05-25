@@ -25,9 +25,7 @@ def test_build_hunter_map_adds_both_directions():
         ("Old Theater", "Train Station"),
         ("Train Station", "Library Basement"),
     ]
-
     graph = normalize_graph(build_hunter_map(edges))
-
     assert graph == {
         "Old Theater": ["Train Station"],
         "Train Station": ["Library Basement", "Old Theater"],
@@ -41,9 +39,7 @@ def test_build_hunter_map_avoids_duplicate_neighbors():
         ("Old Theater", "Train Station"),
         ("Train Station", "Old Theater"),
     ]
-
     graph = normalize_graph(build_hunter_map(edges))
-
     assert graph == {
         "Old Theater": ["Train Station"],
         "Train Station": ["Old Theater"],
@@ -59,9 +55,7 @@ def test_build_weighted_hunter_map_adds_both_directions():
         ("Old Theater", "Train Station", 4),
         ("Train Station", "Library Basement", 7),
     ]
-
     graph = build_weighted_hunter_map(edges)
-
     assert graph["Old Theater"]["Train Station"] == 4
     assert graph["Train Station"]["Old Theater"] == 4
     assert graph["Train Station"]["Library Basement"] == 7
@@ -74,17 +68,25 @@ def test_build_weighted_hunter_map_keeps_lowest_duplicate_weight():
         ("Old Theater", "Train Station", 4),
         ("Train Station", "Old Theater", 6),
     ]
-
     graph = build_weighted_hunter_map(edges)
-
     assert graph["Old Theater"]["Train Station"] == 4
     assert graph["Train Station"]["Old Theater"] == 4
 
 
-@pytest.mark.parametrize("bad_weight", [0, -1, -10])
-def test_build_weighted_hunter_map_rejects_non_positive_weights(bad_weight):
-    edges = [("Old Theater", "Train Station", bad_weight)]
+def test_build_weighted_hunter_map_rejects_zero_weight():
+    edges = [("Old Theater", "Train Station", 0)]
+    with pytest.raises(ValueError):
+        build_weighted_hunter_map(edges)
 
+
+def test_build_weighted_hunter_map_rejects_negative_weight():
+    edges = [("Old Theater", "Train Station", -1)]
+    with pytest.raises(ValueError):
+        build_weighted_hunter_map(edges)
+
+
+def test_build_weighted_hunter_map_rejects_large_negative_weight():
+    edges = [("Old Theater", "Train Station", -10)]
     with pytest.raises(ValueError):
         build_weighted_hunter_map(edges)
 
@@ -96,7 +98,6 @@ def test_map_summary_counts_locations_and_undirected_routes():
         "Library Basement": ["Train Station"],
         "Abandoned Pier": ["Train Station"],
     }
-
     assert map_summary(graph) == {"locations": 4, "routes": 3}
 
 
@@ -111,7 +112,6 @@ def test_most_connected_location_returns_highest_degree_location():
         "Library Basement": ["Train Station"],
         "Abandoned Pier": ["Train Station"],
     }
-
     assert most_connected_location(graph) == "Train Station"
 
 
@@ -122,7 +122,6 @@ def test_most_connected_location_tie_returns_alphabetically_first():
         "Library Basement": ["Crypt"],
         "Train Station": ["Old Theater"],
     }
-
     assert most_connected_location(graph) == "Crypt"
 
 
@@ -136,7 +135,6 @@ def test_priority_hunt_order_returns_locations_by_priority():
         (1, "Library Basement"),
         (2, "Train Station"),
     ]
-
     assert priority_hunt_order(reports) == [
         "Library Basement",
         "Train Station",
@@ -154,7 +152,6 @@ def test_priority_hunt_order_handles_ties_alphabetically():
         (1, "Crypt"),
         (1, "Abandoned Pier"),
     ]
-
     assert priority_hunt_order(reports) == [
         "Abandoned Pier",
         "Crypt",
